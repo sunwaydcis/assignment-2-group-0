@@ -1,2 +1,13 @@
+// https://github.com/MoH-Malaysia/covid19-public
+
+import scala.io.Source
+
 @main def main(): Unit = 
-    println("test")
+    val filepath: String = "src/main/resources/hospital.csv"
+    val delimiter = ","
+    val file = Source.fromFile(filepath)
+    for (line <- file.getLines()) {
+        val fields = line.split(delimiter).map(_.trim)
+        println(fields.mkString(", "))
+    }
+    file.close()
