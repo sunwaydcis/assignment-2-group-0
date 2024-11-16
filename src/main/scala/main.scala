@@ -1,5 +1,5 @@
 // https://github.com/MoH-Malaysia/covid19-public
-
+// test
 import scala.io.Source
 
 @main def main(): Unit = 
