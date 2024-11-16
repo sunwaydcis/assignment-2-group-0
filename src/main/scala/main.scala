@@ -1,30 +1,63 @@
 // https://github.com/MoH-Malaysia/covid19-public
 
 import scala.io.Source
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.*
 
 @main def main(): Unit =
+    // Which state has the highest total hospital bed ? 
+    //arrayMethod()
+    listMethod()
+end main
+
+def arrayMethod(): Unit =
+
     val filepath = "src/main/resources/hospital.csv"
     val file = Source.fromFile(filepath)
-    var count = 0
+
     val arrHospital = ArrayBuffer[String]()
     for (line <- file.getLines()) {
         arrHospital += line
     }
-
-    println(arrHospital.mkString("\n"))
-    println()
-    println(arrHospital(1))
-
+    var count = arrHospital.length
     file.close()
 
+    //println(arrHospital.mkString("\n")) // Print all data
+    //println(arrHospital(0)) // Header
 
-def mymethod(): Unit =
-    val filepath: String = "src/main/resources/hospital.csv"
-    val delimiter = ","
+def listMethod(): Unit =
+    val filepath = "src/main/resources/hospital.csv"
     val file = Source.fromFile(filepath)
+
+    val listHospital = ListBuffer[List[String]]()
+
     for (line <- file.getLines()) {
-        val fields = line.split(delimiter).map(_.trim)
-        println(fields.mkString(", "))
+        listHospital += line.split(",").toList
     }
-    file.close()
+
+    println(listHospital.head)
+    println(listHospital(1))
+    val header = listHospital.head
+    val stateIndex = header.indexOf("state")
+    println(stateIndex)
+
+    val totalBedsByState = ListBuffer[List[String]]()
+    var total = 0
+    var previousRow = List[String]()
+    var hospitalData = listHospital.tail
+    hospitalData = hospitalData.sortBy(row => row(stateIndex))(Ordering[String].reverse)
+    for (row <- hospitalData) {
+        var state = row(stateIndex)
+
+        if (hospitalData.indexOf(row) == 0) {
+            println(row(stateIndex) + ": ")
+            total += row(2).toInt
+        } else if (previousRow(stateIndex) == row(stateIndex)) {
+            total += row(2).toInt
+        } else {
+            println(total)
+            println(row(stateIndex) + ": ")
+            total = 0
+        }
+        previousRow = row
+    }
+
