@@ -3,10 +3,10 @@
 import scala.io.Source
 import scala.collection.mutable.*
 
-@main def main(): Unit =
+@main def Question1(): Unit =
     // Which state has the highest total hospital bed?
     listMethod()
-end main
+end Question1
 
 def listMethod(): Unit =
     val filepath = "src/main/resources/hospital.csv"
