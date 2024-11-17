@@ -3,10 +3,10 @@
 import scala.io.Source
 import scala.collection.mutable.*
 
-@main def Question1(): Unit =
+@main def main(): Unit =
     // Which state has the highest total hospital bed?
     listMethod()
-end Question1
+end main
 
 def listMethod(): Unit =
     // file path and open the csv
@@ -35,14 +35,31 @@ def listMethod(): Unit =
     println(latestDate)
 
     // Filter out the list using only the latestDate
-    var latestList = sortedList.filter(row => row.head == latestDate)
-    println(latestList.length)
+    val latestList = sortedList.filter(row => row.head == latestDate)
+    // println(latestList.length)
 
     // Sort it again using the column - Hospital Beds
-    latestList = latestList.sortBy(row => row(2).toInt).reverse
+    val highestHospitalBedsByStateList = latestList.sortBy(row => row(2).toInt).reverse
 
     // print the state with the highest hospital bed
     println("State with highest hospital bed: ")
-    println(latestList.head(1) + ": " + latestList.head(2))
+    println(highestHospitalBedsByStateList.head(1) + ": " + highestHospitalBedsByStateList.head(2))
+
+    // Question2
+    val q2List = latestList
+
+    var totalAvailableBeds: Int = 0
+    var totalDedicatedCOVIDBeds: Int = 0
+
+    for (row <- q2List) {
+        totalAvailableBeds += row(2).toInt
+        totalDedicatedCOVIDBeds += row(3).toInt
+    }
+
+    println("\nRatio of bed dedicated for COVID-19 to total of available hospital bed in the dataset:")
+    println(totalAvailableBeds)
+    println(totalDedicatedCOVIDBeds)
+    println(totalDedicatedCOVIDBeds.toDouble / totalAvailableBeds.toDouble)
 
 
+    file.close()
