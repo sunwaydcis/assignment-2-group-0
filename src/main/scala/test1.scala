@@ -45,8 +45,11 @@ case class HospitalDataHeader(
 
   // Convert data to list
   val data = file.getLines().toList
+
+  // Close file
   file.close()
-  // Get Header
+
+  // Get Header and put them into array for index searching later
   val header = data.head.split(",")
 
   // Map respective index into HospitalDataHeader
