@@ -18,6 +18,23 @@ case class HospitalData(
                          hospNonCovid: Int
                        )
 
+case class HospitalDataHeader(
+                               date: Int,
+                               state: Int,
+                               beds: Int,
+                               bedsCovid: Int,
+                               bedsNonCrit: Int,
+                               admittedPui: Int,
+                               admittedCovid: Int,
+                               admittedTotal: Int,
+                               dischargedPui: Int,
+                               dischargedCovid: Int,
+                               dischargedTotal: Int,
+                               hospCovid: Int,
+                               hospPui: Int,
+                               hospNonCovid: Int
+                             )
+
 @main def test1(): Unit =
   // file path and open the csv
   val filepath = "src/main/resources/hospital.csv"
@@ -28,33 +45,49 @@ case class HospitalData(
 
   // Convert data to list
   val data = file.getLines().toList
+  file.close()
+  // Get Header
+  val header = data.head.split(",")
 
-  // Get Header first
-  val header = data.head.split(",").toList
-  println(header)
+  // Map respective index into HospitalDataHeader
+  val headerIndex = HospitalDataHeader(
+    date = header.indexOf("date"),
+    state = header.indexOf("state"),
+    beds = header.indexOf("beds"),
+    bedsCovid = header.indexOf("beds_covid"),
+    bedsNonCrit = header.indexOf("beds_noncrit"),
+    admittedPui = header.indexOf("admitted_pui"),
+    admittedCovid = header.indexOf("admitted_covid"),
+    admittedTotal = header.indexOf("admitted_total"),
+    dischargedPui = header.indexOf("discharged_pui"),
+    dischargedCovid = header.indexOf("discharged_covid"),
+    dischargedTotal = header.indexOf("discharged_total"),
+    hospCovid = header.indexOf("hosp_covid"),
+    hospPui = header.indexOf("hosp_pui"),
+    hospNonCovid = header.indexOf("hosp_noncovid")
+  )
 
   // For each row in the CSV file, store it as a list of string into the ListBuffer
   for (row <- data.drop(1)) {
     val column = row.split(",").toList
     listHospital += HospitalData(
-      date = column(header.indexOf("date")),
-      state = column(header.indexOf("state")),
-      beds = column(header.indexOf("beds")).toInt,
-      bedsCovid = column(header.indexOf("beds_covid")).toInt,
-      bedsNonCrit = column(header.indexOf("beds_noncrit")).toInt,
-      admittedPui = column(header.indexOf("admitted_pui")).toInt,
-      admittedCovid = column(header.indexOf("admitted_covid")).toInt,
-      admittedTotal = column(header.indexOf("admitted_total")).toInt,
-      dischargedPui = column(header.indexOf("discharged_pui")).toInt,
-      dischargedCovid = column(header.indexOf("discharged_covid")).toInt,
-      dischargedTotal = column(header.indexOf("discharged_total")).toInt,
-      hospCovid = column(header.indexOf("hosp_covid")).toInt,
-      hospPui = column(header.indexOf("hosp_pui")).toInt,
-      hospNonCovid = column(header.indexOf("hosp_noncovid")).toInt,
+      date = column(headerIndex.date),
+      state = column(headerIndex.state),
+      beds = column(headerIndex.beds).toInt,
+      bedsCovid = column(headerIndex.bedsCovid).toInt,
+      bedsNonCrit = column(headerIndex.bedsNonCrit).toInt,
+      admittedPui = column(headerIndex.admittedPui).toInt,
+      admittedCovid = column(headerIndex.admittedCovid).toInt,
+      admittedTotal = column(headerIndex.admittedTotal).toInt,
+      dischargedPui = column(headerIndex.dischargedPui).toInt,
+      dischargedCovid = column(headerIndex.dischargedCovid).toInt,
+      dischargedTotal = column(headerIndex.dischargedTotal).toInt,
+      hospCovid = column(headerIndex.hospCovid).toInt,
+      hospPui = column(headerIndex.hospPui).toInt,
+      hospNonCovid = column(headerIndex.hospNonCovid).toInt,
     )
   }
   val latestDate = listHospital.maxBy(_.date).date
 
-  val stateWithMaxBeds = listHospital.filter(HospitalData => HospitalData.date == latestDate).maxBy(_.beds)
+  val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
   println(stateWithMaxBeds)
-  file.close()
