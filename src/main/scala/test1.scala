@@ -91,3 +91,5 @@ case class HospitalDataHeader(
 
   val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
   println(stateWithMaxBeds)
+
+  // listHospital.filter(_.date == latestDate).foreach(println(_))
