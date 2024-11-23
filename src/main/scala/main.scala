@@ -8,6 +8,10 @@ import scala.collection.mutable.*
     listMethod()
 end main
 
+case class HospitalDataByState() :
+
+end HospitalDataByState
+
 def listMethod(): Unit =
     // file path and open the csv
     val filepath = "src/main/resources/hospital.csv"
