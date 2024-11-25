@@ -96,3 +96,10 @@ case class HospitalDataHeader(
   println(stateWithMaxBeds)
 
   // listHospital.filter(_.date == latestDate).foreach(println(_))
+
+  val totalDedicatedCovidBeds = listHospital.filter(_.date == latestDate)
+  var sum1: Int = 0
+  for (i <- totalDedicatedCovidBeds) {
+    sum1 += i.bedsCovid
+  }
+  println(sum1)
