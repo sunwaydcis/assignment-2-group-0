@@ -110,7 +110,7 @@ object HospitalDataHeader:
   // Question 1: Which state has the highest total hospital beds?
   println("-- Question 1 --")
   // Check if list is empty before proceeding
-  if listHospital.nonEmpty then
+  if latestDateList.nonEmpty then
     // Find the state with the maximum beds on the latest date
     val stateWithMaxBeds = latestDateList
       .maxByOption(_.beds) // Use `maxByOption` for safety in case of an empty list
@@ -127,7 +127,7 @@ object HospitalDataHeader:
   /** QUESTION 2 **/
   // Question 2: Ratio of beds dedicated for COVID-19 to total hospital beds
   println("\n-- Question 2 --")
-  if listHospital.nonEmpty then
+  if latestDateList.nonEmpty then
     // Initialize variables
     var totalBeds = 0
     var totalCovidBeds = 0
@@ -156,4 +156,45 @@ object HospitalDataHeader:
 
   /** QUESTION 3 **/
   // Question 3: Averages of individuals in each category (suspected/probable, covid, and non-covid) admitted per state
+  println("\n-- Question 3 --")
+
+  // Check if the hospital data list is not empty
+  if latestDateList.nonEmpty then
+    // Group the data by state
+    val groupedByState = latestDateList.groupBy(_.state)
+
+//  if listHospital.nonEmpty then
+//    // Group the data by state
+//    val groupedByState = listHospital.groupBy(_.state)
+
+    // Iterate through each state and calculate averages for each category
+    groupedByState.foreach { case (state, data) =>
+      // Initialize variables to store totals for each category
+      var totalSuspected = 0
+      var totalCovid = 0
+      var totalAdmissions = 0
+
+      // Iterate over each row for the current state to accumulate totals for each category
+      for row <- data do
+        totalSuspected += row.admittedPui
+        totalCovid += row.admittedCovid
+        totalAdmissions += row.admittedTotal
+      val totalNonCovid = totalAdmissions - totalCovid
+
+      // Helper function to calculate the average, returning 0.0 if the data is empty
+      def calculateAverage(total: Int, length: Int): Double =
+        if length > 0 then total.toDouble / length else 0.0
+
+      // Calculating averages for each category
+      val averageSuspected = calculateAverage(totalSuspected, data.length)
+      val averageCovid = calculateAverage(totalCovid, data.length)
+      val averageNonCovid = calculateAverage(totalNonCovid, data.length)
+
+      // Output the averages for the current state
+      println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f, Non-COVID = $averageNonCovid%.2f")
+    }
+  else
+    // Handle case where there is no hospital data available
+    println("No valid hospital data found in the file.")
+
 end main
