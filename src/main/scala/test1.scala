@@ -91,15 +91,27 @@ case class HospitalDataHeader(
     )
   }
   val latestDate = listHospital.maxBy(_.date).date
-
-  val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
+  val latestListHospital = listHospital.filter(_.date == latestDate)
+  val stateWithMaxBeds = latestListHospital.maxBy(_.beds)
   println(stateWithMaxBeds)
 
-  // listHospital.filter(_.date == latestDate).foreach(println(_))
+  // latestListHospital.foreach(println(_))
+  var start = System.currentTimeMillis()
+  val totalDedicatedCovidBeds = latestListHospital.foldLeft(0)((sum,data) => sum + data.bedsCovid)
+  val totalAvailableBeds = latestListHospital.foldLeft(0)((sum, data) => sum + data.beds)
+  println(totalDedicatedCovidBeds.toDouble / totalAvailableBeds.toDouble)
+  println(System.currentTimeMillis() - start)
 
-  val totalDedicatedCovidBeds = listHospital.filter(_.date == latestDate)
-  var sum1: Int = 0
-  for (i <- totalDedicatedCovidBeds) {
-    sum1 += i.bedsCovid
+  val stateAverages = latestListHospital
+    .groupBy(_.state)
+    .map { case (state, data) =>
+      val avgAdmittedPui = data.map(_.admittedPui).sum.toDouble / data.size
+      val avgAdmittedCovid = data.map(_.admittedCovid).sum.toDouble / data.size
+      val avgAdmittedNonCovid = data.map(_.admittedPui).sum.toDouble / data.size
+      (state, avgAdmittedPui, avgAdmittedCovid, avgAdmittedNonCovid)
+    }
+
+  // Print the averages for each state
+  stateAverages.foreach { case (state, avgPui, avgCovid, avgNonCovid) =>
+    println(s"State: $state, Average PUI Admitted: $avgPui, Average Covid Admitted: $avgCovid, Average Non-Covid Admitted: $avgNonCovid")
   }
-  println(sum1)
