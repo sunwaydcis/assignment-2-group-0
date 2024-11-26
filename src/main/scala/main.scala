@@ -101,18 +101,18 @@ object HospitalDataHeader:
       hospPui = columns(headerIndex.hospPui).toInt,
       hospNonCovid = columns(headerIndex.hospNonCovid).toInt
     )
-
+  // TO REMOVE
   // Find the latest date in the dataset
-  val latestDate = listHospital.maxBy(_.date).date
-  val latestDateList = listHospital.filter(_.date == latestDate)
+//  val latestDate = listHospital.maxBy(_.date).date
+//  val latestDateList = listHospital.filter(_.date == latestDate)
 
   /** QUESTION 1 **/
   // Question 1: Which state has the highest total hospital beds?
   println("-- Question 1 --")
   // Check if list is empty before proceeding
-  if latestDateList.nonEmpty then
+  if listHospital.nonEmpty then
     // Find the state with the maximum beds on the latest date
-    val stateWithMaxBeds = latestDateList
+    val stateWithMaxBeds = listHospital
       .maxByOption(_.beds) // Use `maxByOption` for safety in case of an empty list
 
     // Output
@@ -120,27 +120,32 @@ object HospitalDataHeader:
       case Some(state) =>
         println(s"State with highest total hospital beds is ${state.state} with ${state.beds} beds")
       case None =>
-        println(s"No data available for the latest date: $latestDate")
+        println(s"No data available.")
   else
     println("No valid hospital data found in the file.")
 
   /** QUESTION 2 **/
   // Question 2: Ratio of beds dedicated for COVID-19 to total hospital beds
   println("\n-- Question 2 --")
-  if latestDateList.nonEmpty then
+  if listHospital.nonEmpty then
     // Initialize variables
-    var totalBeds = 0
-    var totalCovidBeds = 0
+//    var totalBeds = 0
+//    var totalCovidBeds = 0
 
     // Calculate total beds and dedicated COVID beds
-    for data <- latestDateList do
-      totalBeds += data.beds
-      totalCovidBeds += data.bedsCovid
+//    for data <- latestDateList do
+//      totalBeds += data.beds
+//      totalCovidBeds += data.bedsCovid
 
-//    val (totalAvailableBeds, totalDedicatedCOVIDBeds) = latestDateList.foldLeft((0, 0)) {
+//    val (totalAvailableBeds, totalDedicatedCOVIDBeds) = listHospital.foldLeft((0, 0)) {
 //      case ((totalBeds, covidBeds), data) =>
 //        (totalBeds + data.beds, covidBeds + data.bedsCovid)
 //    }
+
+    val (totalBeds, totalCovidBeds) = listHospital.foldLeft((0, 0)) {
+      case ((beds, covidBeds), data) =>
+        (beds + data.beds, covidBeds + data.bedsCovid)
+    }
 
     if totalBeds > 0 then
       // Calculate ratio
@@ -159,9 +164,9 @@ object HospitalDataHeader:
   println("\n-- Question 3 --")
 
   // Check if the hospital data list is not empty
-  if latestDateList.nonEmpty then
+  if listHospital.nonEmpty then
     // Group the data by state
-    val groupedByState = latestDateList.groupBy(_.state)
+    val groupedByState = listHospital.groupBy(_.state)
 
 //  if listHospital.nonEmpty then
 //    // Group the data by state
