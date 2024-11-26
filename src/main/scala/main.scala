@@ -20,46 +20,6 @@ case class HospitalData(
                          hospNonCovid: Int
                        )
 
-// Case class to hold header indices for mapping CSV columns
-case class HospitalDataHeader(
-                               date: Int,
-                               state: Int,
-                               beds: Int,
-                               bedsCovid: Int,
-                               bedsNonCrit: Int,
-                               admittedPui: Int,
-                               admittedCovid: Int,
-                               admittedTotal: Int,
-                               dischargedPui: Int,
-                               dischargedCovid: Int,
-                               dischargedTotal: Int,
-                               hospCovid: Int,
-                               hospPui: Int,
-                               hospNonCovid: Int
-                             )
-
-// Companion object to handle mapping of header
-object HospitalDataHeader:
-  // Function to map the column names to their respective indices for easy lookup
-  def getHeaderIndex(header: Array[String]): HospitalDataHeader =
-    // Return an instance of HospitalDataHeader with its indices
-    HospitalDataHeader(
-      date = header.indexOf("date"),
-      state = header.indexOf("state"),
-      beds = header.indexOf("beds"),
-      bedsCovid = header.indexOf("beds_covid"),
-      bedsNonCrit = header.indexOf("beds_noncrit"),
-      admittedPui = header.indexOf("admitted_pui"),
-      admittedCovid = header.indexOf("admitted_covid"),
-      admittedTotal = header.indexOf("admitted_total"),
-      dischargedPui = header.indexOf("discharged_pui"),
-      dischargedCovid = header.indexOf("discharged_covid"),
-      dischargedTotal = header.indexOf("discharged_total"),
-      hospCovid = header.indexOf("hosp_covid"),
-      hospPui = header.indexOf("hosp_pui"),
-      hospNonCovid = header.indexOf("hosp_noncovid")
-    )
-
 @main def main(): Unit =
   /** FILE & CSV **/
   // Define the filepath and open the CSV
@@ -79,32 +39,28 @@ object HospitalDataHeader:
   // Extract header row and put them into array (split into column names)
   val header = data.head.split(",")
 
-  // Calling function to map the column names to their respective indices for easy lookup
-  val headerIndex = HospitalDataHeader.getHeaderIndex(header)
+  // Using zipWithIndex to create a map to match column to their respective indices
+  val headerIndex = header.zipWithIndex.toMap
 
   // For each row in the CSV file, store it as a list of string
   for row <- data.drop(1) do
     val columns = row.split(",").toList
     listHospital += HospitalData(
-      date = columns(headerIndex.date),
-      state = columns(headerIndex.state),
-      beds = columns(headerIndex.beds).toInt,
-      bedsCovid = columns(headerIndex.bedsCovid).toInt,
-      bedsNonCrit = columns(headerIndex.bedsNonCrit).toInt,
-      admittedPui = columns(headerIndex.admittedPui).toInt,
-      admittedCovid = columns(headerIndex.admittedCovid).toInt,
-      admittedTotal = columns(headerIndex.admittedTotal).toInt,
-      dischargedPui = columns(headerIndex.dischargedPui).toInt,
-      dischargedCovid = columns(headerIndex.dischargedCovid).toInt,
-      dischargedTotal = columns(headerIndex.dischargedTotal).toInt,
-      hospCovid = columns(headerIndex.hospCovid).toInt,
-      hospPui = columns(headerIndex.hospPui).toInt,
-      hospNonCovid = columns(headerIndex.hospNonCovid).toInt
+      date = columns(headerIndex("date")),
+      state = columns(headerIndex("state")),
+      beds = columns(headerIndex("beds")).toInt,
+      bedsCovid = columns(headerIndex("beds_covid")).toInt,
+      bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
+      admittedPui = columns(headerIndex("admitted_pui")).toInt,
+      admittedCovid = columns(headerIndex("admitted_covid")).toInt,
+      admittedTotal = columns(headerIndex("admitted_total")).toInt,
+      dischargedPui = columns(headerIndex("discharged_pui")).toInt,
+      dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
+      dischargedTotal = columns(headerIndex("discharged_total")).toInt,
+      hospCovid = columns(headerIndex("hosp_covid")).toInt,
+      hospPui = columns(headerIndex("hosp_pui")).toInt,
+      hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
     )
-  // TO REMOVE
-  // Find the latest date in the dataset
-//  val latestDate = listHospital.maxBy(_.date).date
-//  val latestDateList = listHospital.filter(_.date == latestDate)
 
   /** QUESTION 1 **/
   // Question 1: Which state has the highest total hospital beds?
