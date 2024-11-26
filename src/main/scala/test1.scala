@@ -1,6 +1,8 @@
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
+/*** DATA MODELS ***/
+// Case class for representing a row of hospital data
 case class HospitalData(
                          date: String,
                          state: String,
@@ -18,6 +20,7 @@ case class HospitalData(
                          hospNonCovid: Int
                        )
 
+// Case class to hold header indices for mapping CSV columns
 case class HospitalDataHeader(
                                date: Int,
                                state: Int,
@@ -36,23 +39,25 @@ case class HospitalDataHeader(
                              )
 
 @main def test1(): Unit =
-  // file path and open the csv
+  /*** FILE & CSV ***/
+  // Define the filepath and open the CSV
   val filepath = "src/main/resources/hospital.csv"
   val file = Source.fromFile(filepath)
 
-  // Create a buffered list which stores a list of string
+  // Create a buffered list to store hospital data
   val listHospital = ListBuffer[HospitalData]()
 
-  // Convert data to list
+  // Read the CSV file into a list of strings
   val data = file.getLines().toList
 
   // Close file
   file.close()
 
-  // Get Header and put them into array for index searching later
+  /*** HEADER MAPPING & DATA PARSING ***/
+  // Extract header row and put them into array (split into column names)
   val header = data.head.split(",")
 
-  // Map respective index into HospitalDataHeader
+  // Map the column names to their respective indices for easy lookup
   val headerIndex = HospitalDataHeader(
     date = header.indexOf("date"),
     state = header.indexOf("state"),
@@ -70,29 +75,47 @@ case class HospitalDataHeader(
     hospNonCovid = header.indexOf("hosp_noncovid")
   )
 
-  // For each row in the CSV file, store it as a list of string into the ListBuffer
-  for (row <- data.drop(1)) {
-    val column = row.split(",").toList
+  // For each row in the CSV file, store it as a list of string
+  for row <- data.drop(1) do
+    val columns = row.split(",").toList
     listHospital += HospitalData(
-      date = column(headerIndex.date),
-      state = column(headerIndex.state),
-      beds = column(headerIndex.beds).toInt,
-      bedsCovid = column(headerIndex.bedsCovid).toInt,
-      bedsNonCrit = column(headerIndex.bedsNonCrit).toInt,
-      admittedPui = column(headerIndex.admittedPui).toInt,
-      admittedCovid = column(headerIndex.admittedCovid).toInt,
-      admittedTotal = column(headerIndex.admittedTotal).toInt,
-      dischargedPui = column(headerIndex.dischargedPui).toInt,
-      dischargedCovid = column(headerIndex.dischargedCovid).toInt,
-      dischargedTotal = column(headerIndex.dischargedTotal).toInt,
-      hospCovid = column(headerIndex.hospCovid).toInt,
-      hospPui = column(headerIndex.hospPui).toInt,
-      hospNonCovid = column(headerIndex.hospNonCovid).toInt,
+      date = columns(headerIndex.date),
+      state = columns(headerIndex.state),
+      beds = columns(headerIndex.beds).toInt,
+      bedsCovid = columns(headerIndex.bedsCovid).toInt,
+      bedsNonCrit = columns(headerIndex.bedsNonCrit).toInt,
+      admittedPui = columns(headerIndex.admittedPui).toInt,
+      admittedCovid = columns(headerIndex.admittedCovid).toInt,
+      admittedTotal = columns(headerIndex.admittedTotal).toInt,
+      dischargedPui = columns(headerIndex.dischargedPui).toInt,
+      dischargedCovid = columns(headerIndex.dischargedCovid).toInt,
+      dischargedTotal = columns(headerIndex.dischargedTotal).toInt,
+      hospCovid = columns(headerIndex.hospCovid).toInt,
+      hospPui = columns(headerIndex.hospPui).toInt,
+      hospNonCovid = columns(headerIndex.hospNonCovid).toInt
     )
-  }
-  val latestDate = listHospital.maxBy(_.date).date
 
-  val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
-  println(stateWithMaxBeds)
+  /*** OUTPUT ***/
+  // Check if list is empty before proceeding
+  if listHospital.nonEmpty then
+    // Find the latest date in the dataset
+    val latestDate = listHospital.maxBy(_.date).date
+
+    // Find the state with the maximum beds on the latest date
+    val stateWithMaxBeds = listHospital
+      .filter(_.date == latestDate)
+      .maxByOption(_.beds) // Use `maxByOption` for safety in case of an empty list
+
+    // Output
+    stateWithMaxBeds match
+      case Some(state) => println(s"State with max beds on $latestDate: $state")
+      case None => println(s"No data available for the latest date: $latestDate")
+  else
+    println("No valid hospital data found in the file.")
+
+//  val latestDate = listHospital.maxBy(_.date).date
+//
+//  val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
+//  println(stateWithMaxBeds)
 
   // listHospital.filter(_.date == latestDate).foreach(println(_))
