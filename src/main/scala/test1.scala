@@ -1,7 +1,7 @@
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-/*** DATA MODELS ***/
+/** DATA MODELS **/
 // Case class for representing a row of hospital data
 case class HospitalData(
                          date: String,
@@ -39,7 +39,7 @@ case class HospitalDataHeader(
                              )
 
 @main def test1(): Unit =
-  /*** FILE & CSV ***/
+  /** FILE & CSV **/
   // Define the filepath and open the CSV
   val filepath = "src/main/resources/hospital.csv"
   val file = Source.fromFile(filepath)
@@ -53,7 +53,7 @@ case class HospitalDataHeader(
   // Close file
   file.close()
 
-  /*** HEADER MAPPING & DATA PARSING ***/
+  /** HEADER MAPPING & DATA PARSING **/
   // Extract header row and put them into array (split into column names)
   val header = data.head.split(",")
 
@@ -95,7 +95,7 @@ case class HospitalDataHeader(
       hospNonCovid = columns(headerIndex.hospNonCovid).toInt
     )
 
-  /*** OUTPUT ***/
+  /** OUTPUT **/
   // Check if list is empty before proceeding
   if listHospital.nonEmpty then
     // Find the latest date in the dataset
@@ -112,10 +112,3 @@ case class HospitalDataHeader(
       case None => println(s"No data available for the latest date: $latestDate")
   else
     println("No valid hospital data found in the file.")
-
-//  val latestDate = listHospital.maxBy(_.date).date
-//
-//  val stateWithMaxBeds = listHospital.filter(_.date == latestDate).maxBy(_.beds)
-//  println(stateWithMaxBeds)
-
-  // listHospital.filter(_.date == latestDate).foreach(println(_))
