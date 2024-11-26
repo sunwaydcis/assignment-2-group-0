@@ -26,14 +26,13 @@ case class HospitalData(
   val filepath = "src/main/resources/hospital.csv"
   val file = Source.fromFile(filepath)
 
-  // Create a buffered list to store hospital data
-  val listHospital = ListBuffer[HospitalData]()
+
 
   // Read the CSV file into a list of strings
   val data = file.getLines().toList
-
+  //val data = file.getLines().to(LazyList)
   // Close file
-  file.close()
+
 
   /** HEADER MAPPING & DATA PARSING **/
   // Extract header row and put them into array (split into column names)
@@ -41,26 +40,53 @@ case class HospitalData(
 
   // Using zipWithIndex to create a map to match column to their respective indices
   val headerIndex = header.zipWithIndex.toMap
+  val curr = System.currentTimeMillis()
+
+  // Create a buffered list to store hospital data
+  // lazy list method
+  val listHospital: LazyList[HospitalData] = data.drop(1).map {
+    row =>
+        val columns = row.split(",").toList
+        HospitalData(
+          date = columns(headerIndex("date")),
+          state = columns(headerIndex("state")),
+          beds = columns(headerIndex("beds")).toInt,
+          bedsCovid = columns(headerIndex("beds_covid")).toInt,
+          bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
+          admittedPui = columns(headerIndex("admitted_pui")).toInt,
+          admittedCovid = columns(headerIndex("admitted_covid")).toInt,
+          admittedTotal = columns(headerIndex("admitted_total")).toInt,
+          dischargedPui = columns(headerIndex("discharged_pui")).toInt,
+          dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
+          dischargedTotal = columns(headerIndex("discharged_total")).toInt,
+          hospCovid = columns(headerIndex("hosp_covid")).toInt,
+          hospPui = columns(headerIndex("hosp_pui")).toInt,
+          hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
+        )
+  }.to(LazyList)
 
   // For each row in the CSV file, store it as a list of string
-  for row <- data.drop(1) do
-    val columns = row.split(",").toList
-    listHospital += HospitalData(
-      date = columns(headerIndex("date")),
-      state = columns(headerIndex("state")),
-      beds = columns(headerIndex("beds")).toInt,
-      bedsCovid = columns(headerIndex("beds_covid")).toInt,
-      bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
-      admittedPui = columns(headerIndex("admitted_pui")).toInt,
-      admittedCovid = columns(headerIndex("admitted_covid")).toInt,
-      admittedTotal = columns(headerIndex("admitted_total")).toInt,
-      dischargedPui = columns(headerIndex("discharged_pui")).toInt,
-      dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
-      dischargedTotal = columns(headerIndex("discharged_total")).toInt,
-      hospCovid = columns(headerIndex("hosp_covid")).toInt,
-      hospPui = columns(headerIndex("hosp_pui")).toInt,
-      hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
-    )
+//  val listHospital: List[HospitalData] = data.drop(1).map {
+//        row =>
+//            val columns = row.split(",").toList
+//            HospitalData(
+//              date = columns(headerIndex("date")),
+//              state = columns(headerIndex("state")),
+//              beds = columns(headerIndex("beds")).toInt,
+//              bedsCovid = columns(headerIndex("beds_covid")).toInt,
+//              bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
+//              admittedPui = columns(headerIndex("admitted_pui")).toInt,
+//              admittedCovid = columns(headerIndex("admitted_covid")).toInt,
+//              admittedTotal = columns(headerIndex("admitted_total")).toInt,
+//              dischargedPui = columns(headerIndex("discharged_pui")).toInt,
+//              dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
+//              dischargedTotal = columns(headerIndex("discharged_total")).toInt,
+//              hospCovid = columns(headerIndex("hosp_covid")).toInt,
+//              hospPui = columns(headerIndex("hosp_pui")).toInt,
+//              hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
+//            )
+//  }
+  println(System.currentTimeMillis() - curr)
 
   /** QUESTION 1 **/
   // Question 1: Which state has the highest total hospital beds?
@@ -158,4 +184,6 @@ case class HospitalData(
     // Handle case where there is no hospital data available
     println("No valid hospital data found in the file.")
 
+
+  file.close()
 end main
