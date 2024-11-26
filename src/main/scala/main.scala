@@ -38,6 +38,28 @@ case class HospitalDataHeader(
                                hospNonCovid: Int
                              )
 
+// Companion object to handle mapping of header
+object HospitalDataHeader:
+  // Function to map the column names to their respective indices for easy lookup
+  def getHeaderIndex(header: Array[String]): HospitalDataHeader =
+    // Return an instance of HospitalDataHeader with its indices
+    HospitalDataHeader(
+      date = header.indexOf("date"),
+      state = header.indexOf("state"),
+      beds = header.indexOf("beds"),
+      bedsCovid = header.indexOf("beds_covid"),
+      bedsNonCrit = header.indexOf("beds_noncrit"),
+      admittedPui = header.indexOf("admitted_pui"),
+      admittedCovid = header.indexOf("admitted_covid"),
+      admittedTotal = header.indexOf("admitted_total"),
+      dischargedPui = header.indexOf("discharged_pui"),
+      dischargedCovid = header.indexOf("discharged_covid"),
+      dischargedTotal = header.indexOf("discharged_total"),
+      hospCovid = header.indexOf("hosp_covid"),
+      hospPui = header.indexOf("hosp_pui"),
+      hospNonCovid = header.indexOf("hosp_noncovid")
+    )
+
 @main def main(): Unit =
   /** FILE & CSV **/
   // Define the filepath and open the CSV
@@ -57,23 +79,8 @@ case class HospitalDataHeader(
   // Extract header row and put them into array (split into column names)
   val header = data.head.split(",")
 
-  // Map the column names to their respective indices for easy lookup
-  val headerIndex = HospitalDataHeader(
-    date = header.indexOf("date"),
-    state = header.indexOf("state"),
-    beds = header.indexOf("beds"),
-    bedsCovid = header.indexOf("beds_covid"),
-    bedsNonCrit = header.indexOf("beds_noncrit"),
-    admittedPui = header.indexOf("admitted_pui"),
-    admittedCovid = header.indexOf("admitted_covid"),
-    admittedTotal = header.indexOf("admitted_total"),
-    dischargedPui = header.indexOf("discharged_pui"),
-    dischargedCovid = header.indexOf("discharged_covid"),
-    dischargedTotal = header.indexOf("discharged_total"),
-    hospCovid = header.indexOf("hosp_covid"),
-    hospPui = header.indexOf("hosp_pui"),
-    hospNonCovid = header.indexOf("hosp_noncovid")
-  )
+  // Calling function to map the column names to their respective indices for easy lookup
+  val headerIndex = HospitalDataHeader.getHeaderIndex(header)
 
   // For each row in the CSV file, store it as a list of string
   for row <- data.drop(1) do
