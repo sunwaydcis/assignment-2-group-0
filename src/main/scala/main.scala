@@ -20,19 +20,16 @@ case class HospitalData(
                          hospNonCovid: Int
                        )
 
+
 @main def main(): Unit =
   /** FILE & CSV **/
   // Define the filepath and open the CSV
   val filepath = "src/main/resources/hospital.csv"
   val file = Source.fromFile(filepath)
 
-
-
+  var curr = System.currentTimeMillis()
   // Read the CSV file into a list of strings
-  val data = file.getLines().toList
-  //val data = file.getLines().to(LazyList)
-  // Close file
-
+  val data = file.getLines().to(LazyList)
 
   /** HEADER MAPPING & DATA PARSING **/
   // Extract header row and put them into array (split into column names)
@@ -40,7 +37,6 @@ case class HospitalData(
 
   // Using zipWithIndex to create a map to match column to their respective indices
   val headerIndex = header.zipWithIndex.toMap
-  val curr = System.currentTimeMillis()
 
   // Create a buffered list to store hospital data
   // lazy list method
@@ -63,31 +59,9 @@ case class HospitalData(
           hospPui = columns(headerIndex("hosp_pui")).toInt,
           hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
         )
-  }.to(LazyList)
+  }
 
-  // For each row in the CSV file, store it as a list of string
-//  val listHospital: List[HospitalData] = data.drop(1).map {
-//        row =>
-//            val columns = row.split(",").toList
-//            HospitalData(
-//              date = columns(headerIndex("date")),
-//              state = columns(headerIndex("state")),
-//              beds = columns(headerIndex("beds")).toInt,
-//              bedsCovid = columns(headerIndex("beds_covid")).toInt,
-//              bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
-//              admittedPui = columns(headerIndex("admitted_pui")).toInt,
-//              admittedCovid = columns(headerIndex("admitted_covid")).toInt,
-//              admittedTotal = columns(headerIndex("admitted_total")).toInt,
-//              dischargedPui = columns(headerIndex("discharged_pui")).toInt,
-//              dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
-//              dischargedTotal = columns(headerIndex("discharged_total")).toInt,
-//              hospCovid = columns(headerIndex("hosp_covid")).toInt,
-//              hospPui = columns(headerIndex("hosp_pui")).toInt,
-//              hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
-//            )
-//  }
   println(System.currentTimeMillis() - curr)
-
   /** QUESTION 1 **/
   // Question 1: Which state has the highest total hospital beds?
   println("-- Question 1 --")
@@ -110,19 +84,6 @@ case class HospitalData(
   // Question 2: Ratio of beds dedicated for COVID-19 to total hospital beds
   println("\n-- Question 2 --")
   if listHospital.nonEmpty then
-    // Initialize variables
-//    var totalBeds = 0
-//    var totalCovidBeds = 0
-
-    // Calculate total beds and dedicated COVID beds
-//    for data <- latestDateList do
-//      totalBeds += data.beds
-//      totalCovidBeds += data.bedsCovid
-
-//    val (totalAvailableBeds, totalDedicatedCOVIDBeds) = listHospital.foldLeft((0, 0)) {
-//      case ((totalBeds, covidBeds), data) =>
-//        (totalBeds + data.beds, covidBeds + data.bedsCovid)
-//    }
 
     val (totalBeds, totalCovidBeds) = listHospital.foldLeft((0, 0)) {
       case ((beds, covidBeds), data) =>
@@ -141,6 +102,7 @@ case class HospitalData(
   else
     println("No valid hospital data found in the file.")
 
+  curr = System.currentTimeMillis()
   /** QUESTION 3 **/
   // Question 3: Averages of individuals in each category (suspected/probable, covid, and non-covid) admitted per state
   println("\n-- Question 3 --")
@@ -155,14 +117,11 @@ case class HospitalData(
       // Initialize variables to store totals for each category
       var totalSuspected = 0
       var totalCovid = 0
-      var totalAdmissions = 0
 
       // Iterate over each row for the current state to accumulate totals for each category
       for row <- data do
         totalSuspected += row.admittedPui
         totalCovid += row.admittedCovid
-        totalAdmissions += row.admittedTotal
-      val totalNonCovid = totalAdmissions - totalCovid
 
       // Helper function to calculate the average, returning 0.0 if the data is empty
       def calculateAverage(total: Int, length: Int): Double =
@@ -171,15 +130,15 @@ case class HospitalData(
       // Calculating averages for each category
       val averageSuspected = calculateAverage(totalSuspected, data.length)
       val averageCovid = calculateAverage(totalCovid, data.length)
-      val averageNonCovid = calculateAverage(totalNonCovid, data.length)
 
       // Output the averages for the current state
-      println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f, Non-COVID = $averageNonCovid%.2f")
+      println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f")
     }
   else
     // Handle case where there is no hospital data available
     println("No valid hospital data found in the file.")
 
-
+  // Close file
   file.close()
+  println(System.currentTimeMillis() - curr)
 end main
