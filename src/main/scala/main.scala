@@ -1,5 +1,4 @@
 import scala.io.Source
-import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.*
 
 /** DATA MODELS **/
@@ -72,18 +71,15 @@ object HospitalData:
         LazyList.empty
 
 @main def main(): Unit =
-  var curr = System.currentTimeMillis()
-  /** FILE & CSV **/
   // Define the filepath and open the CSV
   val filePath = "src/main/resources/hospital.csv"
   
   // Call function to read the file into list of string
   val data = HospitalData.openFile(filePath)
   
-  /** HEADER MAPPING & DATA PARSING **/
+  // Parse the data into a lazy list of HospitalData
   val listHospital = HospitalData.parseDataToLazyList(data)
-
-  println(System.currentTimeMillis() - curr)
+  
   /** QUESTION 1 **/
   // Question 1: Which state has the highest total hospital beds?
   println("-- Question 1 --")
@@ -106,12 +102,12 @@ object HospitalData:
   // Question 2: Ratio of beds dedicated for COVID-19 to total hospital beds
   println("\n-- Question 2 --")
   if listHospital.nonEmpty then
-
+    // Calculate total beds and covid beds using foldLeft
     val (totalBeds, totalCovidBeds) = listHospital.foldLeft((0, 0)) {
       case ((beds, covidBeds), data) =>
         (beds + data.beds, covidBeds + data.bedsCovid)
     }
-
+    
     if totalBeds > 0 then
       // Calculate ratio
       val ratio = totalCovidBeds.toDouble / totalBeds.toDouble
@@ -120,11 +116,10 @@ object HospitalData:
       println(s"Total beds dedicated to COVID-19: $totalCovidBeds")
       println(f"Ratio of COVID-19 dedicated beds to total beds: $ratio%.4f")
     else
-      println("No valid data available to calculate the ratio.")
+      println("Division Error! No valid data available to calculate the ratio.")
   else
     println("No valid hospital data found in the file.")
-
-  //curr = System.currentTimeMillis()
+  
   /** QUESTION 3 **/
   // Question 3: Averages of individuals in each category (suspected/probable, covid, and non-covid) admitted per state
   println("\n-- Question 3 --")
@@ -136,12 +131,13 @@ object HospitalData:
       .groupBy(_.state)     // Group the data by state
       .foreach {            // Iterate through each state and calculate averages for each category
         case (state, data) =>
+          // Calculate the total suspected and covid admissions
           val (totalSuspected, totalCovid) = data.foldLeft(0,0) {
             case ((suspectedSum, covidSum), data) =>
               (suspectedSum + data.admittedPui, covidSum + data.admittedCovid)
           }
 
-          // getting averages
+          // Calculate average
           val (averageSuspected, averageCovid) =
             (totalSuspected.toDouble / data.length, totalCovid.toDouble / data.length)
 
@@ -151,8 +147,5 @@ object HospitalData:
   else
     // Handle case where there is no hospital data available
     println("No valid hospital data found in the file.")
-
-  // Close file
-  //file.close()
-  println(System.currentTimeMillis() - curr)
+  
 end main
