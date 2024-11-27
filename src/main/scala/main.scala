@@ -116,8 +116,8 @@ case class HospitalData(
     groupedByState.foreach { case (state, data) =>
 
       val (totalSuspected, totalCovid) = data.foldLeft(0,0) {
-        case ((suspected, covidCount), data) =>
-          (suspected + data.admittedPui, covidCount + data.admittedCovid)
+        case ((suspectedCount, covidCount), data) =>
+          (suspectedCount + data.admittedPui, covidCount + data.admittedCovid)
       }
 
       val (averageSuspected, averageCovid) =
