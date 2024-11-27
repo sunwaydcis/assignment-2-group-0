@@ -1,5 +1,6 @@
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
+import scala.util.{Try, Success, Failure}
+import scala.collection.immutable.*
 
 /** DATA MODELS **/
 // Case class for representing a row of hospital data
@@ -19,47 +20,68 @@ case class HospitalData(
                          hospPui: Int,
                          hospNonCovid: Int
                        )
+// Companion Object for Hospital Data
+object HospitalData:
+  // Function to open file and read them in to a list of strings
+  def openFile(filePath: String): List[String] =
+    try
+      val file = Source.fromFile(filePath)
+      // if opening file success, read line
+      try
+        file.getLines().to(List)
+      // close file after reading
+      finally
+        file.close()
+    catch
+      // print error message
+      case e: Exception =>
+        println("Unable to open file: " + e.getMessage)
+        List.empty
 
+  // Function to parse the data into lazy list
+  def parseDataToLazyList(data: List[String]): LazyList[HospitalData] =
+    try
+      // Extract header row and put them into array (split into column names)
+      val header = data.head.split(",")
+      // Using zipWithIndex to create a map to match column to their respective indices
+      val headerIndex = header.zipWithIndex.toMap
+      // return using lazy list method
+      data.drop(1).map {
+        row =>
+          val columns = row.split(",").toList
+          HospitalData(
+            date = columns(headerIndex("date")),
+            state = columns(headerIndex("state")),
+            beds = columns(headerIndex("beds")).toInt,
+            bedsCovid = columns(headerIndex("beds_covid")).toInt,
+            bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
+            admittedPui = columns(headerIndex("admitted_pui")).toInt,
+            admittedCovid = columns(headerIndex("admitted_covid")).toInt,
+            admittedTotal = columns(headerIndex("admitted_total")).toInt,
+            dischargedPui = columns(headerIndex("discharged_pui")).toInt,
+            dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
+            dischargedTotal = columns(headerIndex("discharged_total")).toInt,
+            hospCovid = columns(headerIndex("hosp_covid")).toInt,
+            hospPui = columns(headerIndex("hosp_pui")).toInt,
+            hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
+          )
+      }.to(LazyList)
+    catch
+      case e: Exception =>
+        println("Unable to parse line: " + e.getMessage)
+        LazyList.empty
 
 @main def main(): Unit =
+  var curr = System.currentTimeMillis()
   /** FILE & CSV **/
   // Define the filepath and open the CSV
-  val filepath = "src/main/resources/hospital.csv"
-  val file = Source.fromFile(filepath)
-
-  var curr = System.currentTimeMillis()
-  // Read the CSV file into a list of strings
-  val data = file.getLines().to(LazyList)
-
+  val filePath = "src/main/resources/hospital.csv"
+  
+  // Call function to read the file into list of string
+  val data = HospitalData.openFile(filePath)
+  
   /** HEADER MAPPING & DATA PARSING **/
-  // Extract header row and put them into array (split into column names)
-  val header = data.head.split(",")
-
-  // Using zipWithIndex to create a map to match column to their respective indices
-  val headerIndex = header.zipWithIndex.toMap
-
-  // Create a buffered list to store hospital data
-  // lazy list method
-  val listHospital: LazyList[HospitalData] = data.drop(1).map {
-    row =>
-        val columns = row.split(",").toList
-        HospitalData(
-          date = columns(headerIndex("date")),
-          state = columns(headerIndex("state")),
-          beds = columns(headerIndex("beds")).toInt,
-          bedsCovid = columns(headerIndex("beds_covid")).toInt,
-          bedsNonCrit = columns(headerIndex("beds_noncrit")).toInt,
-          admittedPui = columns(headerIndex("admitted_pui")).toInt,
-          admittedCovid = columns(headerIndex("admitted_covid")).toInt,
-          admittedTotal = columns(headerIndex("admitted_total")).toInt,
-          dischargedPui = columns(headerIndex("discharged_pui")).toInt,
-          dischargedCovid = columns(headerIndex("discharged_covid")).toInt,
-          dischargedTotal = columns(headerIndex("discharged_total")).toInt,
-          hospCovid = columns(headerIndex("hosp_covid")).toInt,
-          hospPui = columns(headerIndex("hosp_pui")).toInt,
-          hospNonCovid = columns(headerIndex("hosp_noncovid")).toInt
-        )
-  }
+  val listHospital = HospitalData.parseDataToLazyList(data)
 
   println(System.currentTimeMillis() - curr)
   /** QUESTION 1 **/
@@ -102,43 +124,35 @@ case class HospitalData(
   else
     println("No valid hospital data found in the file.")
 
-  curr = System.currentTimeMillis()
+  //curr = System.currentTimeMillis()
   /** QUESTION 3 **/
   // Question 3: Averages of individuals in each category (suspected/probable, covid, and non-covid) admitted per state
   println("\n-- Question 3 --")
-
+  println("Averages of individuals in each category (suspected/probable, covid, and non-covid) admitted per state")
   // Check if the hospital data list is not empty
   if listHospital.nonEmpty then
-    // Group the data by state
-    val groupedByState = listHospital.groupBy(_.state)
 
-    // Iterate through each state and calculate averages for each category
-    groupedByState.foreach { case (state, data) =>
+    val stateAverages: Unit = listHospital
+      .groupBy(_.state)     // Group the data by state
+      .foreach {            // Iterate through each state and calculate averages for each category
+        case (state, data) =>
+          val (totalSuspected, totalCovid) = data.foldLeft(0,0) {
+            case ((suspectedSum, covidSum), data) =>
+              (suspectedSum + data.admittedPui, covidSum + data.admittedCovid)
+          }
 
-      val (totalSuspected, totalCovid) = data.foldLeft(0,0) {
-        case ((suspectedCount, covidCount), data) =>
-          (suspectedCount + data.admittedPui, covidCount + data.admittedCovid)
+          // getting averages
+          val (averageSuspected, averageCovid) =
+            (totalSuspected.toDouble / data.length, totalCovid.toDouble / data.length)
+
+          // Output the averages for the current state
+          println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f")
       }
-
-      val (averageSuspected, averageCovid) =
-        (totalSuspected.toDouble / data.length, totalCovid.toDouble / data.length)
-
-      // Helper function to calculate the average, returning 0.0 if the data is empty
-//      def calculateAverage(total: Int, length: Int): Double =
-//        if length > 0 then total.toDouble / length else 0.0
-//
-//      // Calculating averages for each category
-//      val averageSuspected = calculateAverage(totalSuspected, data.length)
-//      val averageCovid = calculateAverage(totalCovid, data.length)
-
-      // Output the averages for the current state
-      println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f")
-    }
   else
     // Handle case where there is no hospital data available
     println("No valid hospital data found in the file.")
 
   // Close file
-  file.close()
+  //file.close()
   println(System.currentTimeMillis() - curr)
 end main
