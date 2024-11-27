@@ -114,22 +114,22 @@ case class HospitalData(
 
     // Iterate through each state and calculate averages for each category
     groupedByState.foreach { case (state, data) =>
-      // Initialize variables to store totals for each category
-      var totalSuspected = 0
-      var totalCovid = 0
 
-      // Iterate over each row for the current state to accumulate totals for each category
-      for row <- data do
-        totalSuspected += row.admittedPui
-        totalCovid += row.admittedCovid
+      val (totalSuspected, totalCovid) = data.foldLeft(0,0) {
+        case ((suspected, covidCount), data) =>
+          (suspected + data.admittedPui, covidCount + data.admittedCovid)
+      }
+
+      val (averageSuspected, averageCovid) =
+        (totalSuspected.toDouble / data.length, totalCovid.toDouble / data.length)
 
       // Helper function to calculate the average, returning 0.0 if the data is empty
-      def calculateAverage(total: Int, length: Int): Double =
-        if length > 0 then total.toDouble / length else 0.0
-
-      // Calculating averages for each category
-      val averageSuspected = calculateAverage(totalSuspected, data.length)
-      val averageCovid = calculateAverage(totalCovid, data.length)
+//      def calculateAverage(total: Int, length: Int): Double =
+//        if length > 0 then total.toDouble / length else 0.0
+//
+//      // Calculating averages for each category
+//      val averageSuspected = calculateAverage(totalSuspected, data.length)
+//      val averageCovid = calculateAverage(totalCovid, data.length)
 
       // Output the averages for the current state
       println(f" - $state: Suspected = $averageSuspected%.2f, COVID-19 = $averageCovid%.2f")
