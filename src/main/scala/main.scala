@@ -150,10 +150,6 @@ case class HospitalData(
     // Group the data by state
     val groupedByState = listHospital.groupBy(_.state)
 
-//  if listHospital.nonEmpty then
-//    // Group the data by state
-//    val groupedByState = listHospital.groupBy(_.state)
-
     // Iterate through each state and calculate averages for each category
     groupedByState.foreach { case (state, data) =>
       // Initialize variables to store totals for each category
