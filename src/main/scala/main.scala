@@ -87,12 +87,14 @@ object HospitalData:
   if listHospital.nonEmpty then
     // Find the state with the maximum beds on the latest date
     val stateWithMaxBeds = listHospital
-      .maxByOption(_.beds) // Use `maxByOption` for safety in case of an empty list
+      .groupBy(_.state)
+      .view.mapValues(_.map(_.beds).sum)
+      .maxByOption(_._2)
 
     // Output
     stateWithMaxBeds match
-      case Some(state) =>
-        println(s"State with highest total hospital beds is ${state.state} with ${state.beds} beds")
+      case Some((state, totalBeds)) =>
+        println(s"State with highest total hospital beds is ${state} with ${totalBeds} beds")
       case None =>
         println(s"No data available.")
   else
@@ -147,5 +149,5 @@ object HospitalData:
   else
     // Handle case where there is no hospital data available
     println("No valid hospital data found in the file.")
-  
+
 end main
